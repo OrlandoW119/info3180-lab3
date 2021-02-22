@@ -7,7 +7,8 @@ This file creates your application.
 
 from app import app
 from flask import render_template, request, redirect, url_for, flash
-
+from app import mail
+from flask_mail import Message
 
 ###
 # Routing for your application.
@@ -46,6 +47,18 @@ def send_text_file(file_name):
     file_dot_text = file_name + '.txt'
     return app.send_static_file(file_dot_text)
 
+@app.route("/contact/", methods=('GET','POST'))
+def contact():
+    form=forms.ContactForm()
+    if request.method=='POST':
+        if form.validate_on_submit():
+            msg=Message(form.subject.data,sender=(form.firstname.data+" "+form.lastname.data,form.email.data),recipients=[]
+            msg.body=form.message.data
+            mail.send(msg)
+            flash('You have successfully filled out the form','success')
+            return redirect(url_for('home'))
+    return render_template('contact.html', form=form)
+    
 
 @app.after_request
 def add_header(response):
